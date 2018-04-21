@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.BugTicketDao">
+
+	<!-- 分页查询状态为审批中的故障单的流程实例ID -->
+	<select id="selectProcInsIds4ActiviProc" resultType="java.lang.String">
+		select procid from t_bug_ticket
+			where status = '审批中'
+			limit #{startIndex}, #{pagesize}
+	</select>
+	
+	<!-- 查询状态为审批中的故障单的数量 -->
+	<select id="selectCount4ActiviProc" resultType="int">
+		select count(procid) from t_bug_ticket
+			where status = '审批中'
+	</select>
+
+	<!-- 分页查询归档故障单 -->
+	<select id="selectBugTicketsByPage4Finished" resultType="bugTicket">
+		select 
+				bt.id,bt.level,bt.address,
+				bt.remark,bt.happentime,
+				bt.createtime,bt.status,
+				bt.userid,bt.procid as procId,
+				u.username
+			from 
+				t_bug_ticket bt
+					left join
+				t_user u
+					on u.id = bt.userid
+			where bt.status = '已审批'
+			limit #{startIndex}, #{pagesize}
+	</select>
+	
+	<!-- 查询归档故障单总数量 -->
+	<select id="selectBugTicketCount4Finished" resultType="int">
+		select 
+				count(bt.id)
+			from t_bug_ticket bt
+			where bt.status = '已审批'
+	</select>
+
+	<!-- 分页查询已审故障单 -->
+	<select id="selectBugTicketsByPage4Authed" resultType="bugTicket">
+		select 
+				bt.id,bt.level,bt.address,
+				bt.remark,bt.happentime,
+				bt.createtime,bt.status,
+				bt.userid,bt.procid as procId,
+				u.username
+			from 
+				t_bug_ticket bt
+					left join
+				t_user u
+					on u.id = bt.userid
+			where bt.id in 
+				(select distinct btid from t_auth_history)
+			limit #{startIndex}, #{pagesize}
+	</select>
+	
+	<!-- 查询已审故障单总数量 -->
+	<select id="selectBugTicketCount4Authed" resultType="int">
+		select 
+				count(bt.id)
+			from 
+				t_bug_ticket bt
+			where bt.id in 
+				(select distinct btid from t_auth_history)
+	</select>
+
+	<!-- 根据流程实例查询故障单 -->
+	<select id="selectBugTicketByProcessInstance" resultType="bugTicket">
+		select 
+				bt.id,bt.level,bt.address,
+				bt.remark,bt.happentime,
+				bt.createtime,bt.status,
+				bt.userid,bt.procid as procId,
+				u.username
+			from 
+				t_bug_ticket bt
+					left join
+				t_user u
+					on bt.userid = u.id
+			where 
+				bt.procid = #{procId}
+	</select>
+	
+	<!-- 删除故障单 -->
+	<delete id="deleteBugTickets">
+		delete from t_bug_ticket
+			where id in
+			<foreach collection="btid" open="(" close=")" separator="," item="id">
+				#{id}
+			</foreach>
+	</delete>
+	
+	<!-- 更新故障单数据 -->
+	<update id="updateBugTicket">
+		update t_bug_ticket
+			set
+				<if test="level != null">
+				level = #{level},
+				address = #{address},
+				remark = #{remark},
+				happentime = #{happentime}
+				</if>
+				<if test="procId != null and status != null">
+				status = #{status},
+				procid = #{procId}
+				</if>
+				<if test="status != null and procId == null">
+				status = #{status}
+				</if>
+			where
+				id = #{id}
+	</update>
+	
+	<!-- 查询当前登录用户对应多少故障单数据 -->
+	<select id="selectBugTicketCount" resultType="int">
+		select count(id) from t_bug_ticket
+			where userid = #{id}
+	</select>
+	
+	<!-- 分页查询当前登录用户的故障单信息 -->
+	<select id="selectBugTicketsByPage" resultType="bugTicket">
+		select 
+				id,level,address,remark,happentime,
+				createtime,status,userid,procid as procId 
+			from t_bug_ticket
+			where userid = #{loginUser.id}
+			order by id
+			limit #{startIndex}, #{pagesize}
+	</select>
+	
+	<!-- 新增故障单 -->
+	<insert id="insertBugTicket">
+		insert into t_bug_ticket(level,address,remark,happentime,createtime,status,userid)
+			values(#{level},#{address},#{remark},#{happentime},#{createtime},#{status},#{user.id})
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+

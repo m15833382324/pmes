@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	function openAuthHistoryWindow(){
+		var rows = $("#authBugTicketTable").datagrid('getSelections');
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要查看审批历史的故障单", "warning");
+		}else if (rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一条故障单查看审批历史", "warning");
+		}else{
+			$("#authHistoryWindow").window('open');
+			$("#authHistoryTable").datagrid({
+				'url': '../../bugticket/getAuthHistoryByBugTicket.do',
+				'queryParams':{
+					'id' : rows[0].id
+				}
+			});
+		}
+	}
+</script>
+</head>
+
+<body style="padding: 5px" fit="true">
+
+	<table id="authBugTicketTable" class="easyui-datagrid"
+		title="首页&gt;故障管理&gt;归档故障单"
+		style="width:auto; height:auto; margin: 5px" fit="true"
+		data-options="
+            		url: '../../bugticket/getBugTicketsByPage4Finished',
+            		method: 'POST',
+            		singleSelect: false,
+            		collapsible : false,
+            		fitColumns : true,
+            		rownumbers : true,
+            		pagination: true,
+            		pagesize : 10,
+            		toolbar : '#toolbar'
+            	">
+		<thead>
+			<tr>
+				<th data-options="field : 'id', checkbox:true"></th>
+				<th data-options="field : 'level', align: 'center', width : 150">故障级别</th>
+				<th
+					data-options="field : 'address', align: 'center', width : 100">故障局点</th>
+				<th
+					data-options="field : 'remark', align: 'right', width : 80">故障描述</th>
+				<th
+					data-options="field : 'happentime', align: 'right', width : 100">故障发生时间</th>
+				<th
+					data-options="field : 'createtime', align: 'right', width : 100">建障时间</th>
+				<th
+					data-options="field : 'username', align: 'right', width : 80">建障人</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="toolbar" style="height: auto; text-align: right">
+		<div style="margin: 5px">
+			<a href="javascript:void(0)" onclick="openAuthHistoryWindow();" class="easyui-linkbutton"
+				iconCls="icon-search" plain="true">审批历史</a> 
+		</div>
+	</div>
+	<div id="authHistoryWindow" class="easyui-window" title="故障单审批历史"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<table id="authHistoryTable" class="easyui-datagrid"
+			title="故障单审批历史数据"
+			style="width: 550px; height: 350px; margin: 5px"
+			data-options="
+	            		method: 'POST',
+	            		singleSelect: false,
+	            		collapsible : false,
+	            		fitColumn : true,
+	            		rownumbers : true
+	            	">
+			<thead>
+				<tr>
+					<th data-options="field : 'authtype', align: 'center', width : 80">审批意见</th>
+					<th
+						data-options="field : 'authtime', align: 'center', width : 100">审批时间</th>
+					<th
+						data-options="field : 'username', align: 'right', width : 80">审批人</th>
+					<th
+						data-options="field : 'remark', align: 'right', width : 200">审批备注</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+</body>
+</html>

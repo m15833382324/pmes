@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.UserDao">
+	
+	<!-- 用户登录 -->
+	<select id="getUserByLoginnameAndLoginpswd" resultType="user">
+		select u.*, m.username as mname 
+			from 
+				t_user u
+					left join
+				t_user m
+					on u.mid = m.id
+			where 
+				u.loginname = #{loginname}
+					and
+				u.loginpswd = #{loginpswd}
+	</select>
+	
+	<!-- 删除用户, 使用自定义类型参数, 属性为List<User> -->
+	<delete id="deleteUsersByParam">
+		delete from t_user
+			where id in
+			<foreach collection="users" close=")" open="(" separator="," item="user">
+				#{user.id}
+			</foreach>
+	</delete>
+	
+	<!-- 删除用户, 使用自定义类型参数, 属性为List<Integer> -->
+	<delete id="deleteUsersByParam1">
+		delete from t_user
+			where id in
+			<foreach collection="userIds" close=")" open="(" separator="," item="id">
+				#{id}
+			</foreach>
+	</delete>
+	
+	<!-- 删除用户,复选删除 -->
+	<delete id="deleteUsers">
+		delete from t_user
+			where id in
+			<foreach collection="ids" close=")" open="(" separator="," item="id">
+				#{id}
+			</foreach>
+	</delete>
+	
+	<!-- 更新用户数据 -->
+	<update id="updateUser">
+		update t_user 
+			set
+				loginname = #{loginname},
+				username = #{username},
+				email  = #{email},
+				level  = #{level},
+				mid    = #{mid}
+			where 
+				id = #{id}
+	</update>
+	
+	<!-- 根据ID查询用户 -->
+	<select id="getUserById" resultType="user">
+		select * from t_user
+			where id = #{id}
+	</select>
+	
+	<!-- 分页查询员工 -->
+	<select id="getUsersByPage" resultType="user">
+		select u.* , m.username as mname
+			from 
+				t_user u
+					left join 
+				t_user m
+					on u.mid = m.id
+			limit #{startIndex}, #{pagesize}
+	</select>
+	
+	<!-- 查询所有员工数量
+		 查询记录条数,尽量不要写count(*), *需要解析所有的列, 效率低
+		 写成count(id)
+	 -->
+	<select id="getUsersCount" resultType="int">
+		select count(id) from t_user
+	</select>
+	
+	<!-- 根据级别查询上级员工数据 -->
+	<select id="selectManagersByLevel" resultType="com.example.demo.entity.User">
+		select * from t_user
+			where level = #{level}
+	</select>
+	
+	<insert id="insertUser">
+		insert into t_user(loginname,loginpswd,username,email,level,createtime,mid)
+			values(#{loginname},#{loginpswd},#{username},#{email},#{level},#{createtime},#{mid})
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+

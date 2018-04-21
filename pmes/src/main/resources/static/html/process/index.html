@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	function addProcDef(){
+		$("#insertProcWindow").window('open');
+	}
+	function closeinsertProcWindow(){
+		$("#addProcForm").form("clear");
+		$("#insertProcWindow").window('close');
+	}
+	function submitAddProc(){
+		$("#addProcForm").form('submit', {
+			'url' : '../../proc/addProcDef.do',
+			'onSubmit' : function(){
+				var fileValue = $("#procDefFile").val();
+				if(fileValue == ""){
+					$.messager.alert("PMES系统提示", "请选择要导入的流程定义图", "warning");
+					return false;
+				}
+				
+				var temp = fileValue.split(".");
+				if("bpmn" === temp[temp.length - 1]){
+					$.messager.progress();
+					return true;
+				}else{
+					$.messager.alert("PMES系统提示", "请导入合法的流程定义图", "warning");
+					return false;
+				}
+			},
+			'success' : function( r ){
+				$.messager.progress('close');
+				var jsonObj = eval("(" + r + ")");
+				if(jsonObj.success){
+					// 当导入成功的时候,应该清空表单,[并关闭窗体]
+					$.messager.alert("PMES系统提示", "导入流程成功", "info", function(){
+						$("#addProcForm").form("clear");
+						$("#insertProcWindow").window('close');
+						$("#procTable").datagrid('reload');
+					});
+				}else{
+					$.messager.alert("PMES系统提示", "导入流程失败", "error");
+				}
+			}
+		});
+	}
+	
+	function deleteProcDefs(){
+		var rows = $("#procTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要删除的流程", "warning");
+		}else{
+			$.messager.confirm("PMES系统提示", "请确认是否删除流程", function(choose){
+				if(choose){
+					// 拼接请求参数
+					// 发送的请求参数为一个自定义的类型数据.
+					var jsonParams = {};
+					$.each(rows, function(i, n){
+						jsonParams['deploymentIds[' + i + ']'] = n.deploymentId;
+					});
+					
+					// 发起删除请求
+					$.ajax({
+						'url' : '../../proc/deleteProcDefs.do',
+						'type': 'POST',
+						'data': jsonParams,
+						'beforeSend': function(){
+							$.messager.progress();
+						},
+						'success' : function(r){
+							$.messager.progress('close');
+							if(r.success){
+								$.messager.alert("PMES系统提示", "删除流程成功", "info", function(){
+									// 刷新分页显示逻辑
+									$("#procTable").datagrid('reload');
+								});
+							}else{
+								$.messager.alert("PMES系统提示", "删除流程失败", "error");
+							}
+						}
+					});
+					
+					// 刷新分页显示逻辑
+					
+				}
+			});
+		}
+	}
+	
+	function showProcImg(){
+		// 判断用户是否选择了一条流程查看图片信息
+		var rows = $("#procTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要查看流程定义图的流程信息", "warning");
+		}else if (rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一条流程信息查看流程定义图", "warning");
+		}else{
+			// 使用剧院模式提供图片的展示.
+			$("#procImgWindow").window("open");
+			$("#showProcImgView").attr("src","../../proc/showProcImg.do?deploymentId="+ rows[0].deploymentId + 
+							"&imgResourceName=" + rows[0].imgResourceName);	
+		}
+	}
+</script>
+</head>
+<body style="padding: 5px" fit="true">
+
+	<table id="procTable" class="easyui-datagrid"
+		title="首页&gt;流程管理&gt;流程维护"
+		style="width:auto; height:auto; margin: 5px" fit="true"
+		data-options="
+            		url: '../../proc/getProcsByPage.do',
+            		method: 'POST',
+            		singleSelect: false,
+            		collapsible : false,
+            		fitColumns:true,
+            		rownumbers : true,
+            		pagination: true,
+            		pagesize : 10,
+            		toolbar : '#toolbar'
+            	">
+		<thead>
+			<tr>
+				<th data-options="field : 'id', checkbox:true"></th>
+				<th data-options="field : 'procDefKey',width:300">流程标识</th>
+				<th data-options="field : 'procDefName',width:300">流程名称</th>
+				<th data-options="field : 'procDefVersion'">版本</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="toolbar" style="height: auto; text-align: right">
+		<div style="margin: 5px">
+			<a href="javascript:void(0)" onclick="addProcDef();"
+				class="easyui-linkbutton" iconCls="icon-add" plain="true">新增流程</a> 
+			<a href="javascript:void(0)" onclick="deleteProcDefs();" class="easyui-linkbutton"
+				iconCls="icon-remove" plain="true">删除流程</a> 
+			<a href="javascript:void(0)" onclick="showProcImg();"
+				class="easyui-linkbutton" iconCls="icon-edit" plain="true">查看图片</a>
+		</div>
+	</div>
+	
+	<div id="procImgWindow" class="easyui-window" title="查看流程图片"
+		style="width: 600px; height: 400px; text-align:center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<img alt="查看流程定义图" src="../../images/loading.gif"
+			id="showProcImgView"/>
+	</div>
+
+	<div id="insertProcWindow" class="easyui-window" title="新增流程"
+		style="width: 600px; height: 400px"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<form id="addProcForm" 
+			method="post" 
+			enctype="multipart/form-data">
+			<table width="96%" border="0" 
+				cellpadding="0" cellspacing="0" style="padding: 10px">
+				<tr>
+					<td width="100%" style="text-align: left; padding-left : 10px">
+						流程定义文件：<input  type="file" id="procDefFile" name="procDefFile" />
+					</td>
+				</tr>
+				<tr>
+					<td width="100%" style="text-align: right; padding-right : 10px">
+						<div style="height: auto; text-align: right">
+						<a href="javascript:void(0)" onclick="submitAddProc();"
+							class="easyui-linkbutton" iconCls="icon-save" 
+							plain="true">导入</a>
+						<a href="javascript:void(0)" onclick="closeinsertProcWindow();"
+							class="easyui-linkbutton" iconCls="icon-redo" 
+							plain="true">返回</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

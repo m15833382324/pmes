@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	function openAuthBugTicketWindow(){
+		// 判断选择的数据数量
+		var rows = $("#authBugTicketTable").datagrid('getSelections');
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要审批的故障单", "warning");
+		}else if(rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一个故障单审批", "warning");
+		}else{
+			$("#authBugTicketWindow").window('open');
+			$("#authBugTicketForm").form('load', rows[0]);
+			$("#authHistoryTable").datagrid({
+				'url' : '../../bugticket/getAuthHistoryByBugTicket.do',
+				'queryParams' : {
+					'id' : rows[0].id
+				}
+			});
+		}
+	}
+	function closeAuthBugTicketWindow(){
+		$("#authBugTicketWindow").window('close');
+		$("#authBugTicketForm").form('clear');
+	}
+	function submitAuthBugTicket(flag){
+		// 根据flag的值,动态的增加一个新的请求参数,如: flag=1代表同意 flag=0代表驳回
+		$("#flag").val(flag);
+		$("#authBugTicketForm").form('submit', {
+			'url' : '../../bugticket/authBugTicket.do',
+			'onSubmit':function(){
+				$.messager.progress();
+				return true;
+			},
+			'success':function( r ){
+				$.messager.progress('close');
+				var jsonObj = eval( "(" + r + ")" );
+				if(jsonObj.success){
+					$.messager.alert("PMES系统提示", "故障单审批成功", "info", function(){
+						// 刷新数据表格,并关闭审批窗口
+						$("#authBugTicketWindow").window('close');
+						$("#authBugTicketTable").datagrid('reload');
+						$("#authBugTicketForm").form("reset");
+					});
+				}else{
+					$.messager.alert("PMES系统提示", "故障单审批失败", "error");
+				}
+			}
+		});
+	}
+	function showActivityImg(){
+		var rows = $("#authBugTicketTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要查看监控图的故障单", "warning");
+		}else if (rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一个故障单查看监控图", "warning");
+		}else{
+			// 1. 打开一个窗口
+			$("#activityImgWindow").window('open');
+			// 2. 显示图片
+			$("#showActivityImgView").attr("src",
+						"../../proc/showActivityImg.do?procDefId=" 
+						+ rows[0].procDefId + "&procInsId=" + rows[0].procInsId);
+		}
+	}
+</script>
+</head>
+
+<body style="padding: 5px" fit="true">
+
+	<table id="authBugTicketTable" class="easyui-datagrid"
+		title="首页&gt;故障管理&gt;待审故障单"
+		style="width:auto; height:auto; margin: 5px" fit="true"
+		data-options="
+            		url: '../../bugticket/getBugTicketsByPage4Auth.do',
+            		method: 'POST',
+            		singleSelect: false,
+            		collapsible : false,
+            		fitColumns : true,
+            		rownumbers : true,
+            		pagination: true,
+            		pagesize : 10,
+            		toolbar : '#toolbar'
+            	">
+		<thead>
+			<tr>
+				<th data-options="field : 'id', checkbox:true"></th>
+				<th data-options="field : 'remark', align: 'center', width : 150">标题</th>
+				<th
+					data-options="field : 'procDefName', align: 'center', width : 100">流程名称</th>
+				<th
+					data-options="field : 'taskName', align: 'right', width : 80">任务状态</th>
+				<th
+					data-options="field : 'taskCreatetime', align: 'right', width : 100">接任时间</th>
+				<th
+					data-options="field : 'username', align: 'right', width : 80">建障人</th>
+				<th
+					data-options="field : 'createtime', align: 'right'">建障时间</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="toolbar" style="height: auto; text-align: right">
+		<div style="margin: 5px">
+			<a href="javascript:void(0)" onclick="showActivityImg();" class="easyui-linkbutton"
+				iconCls="icon-search" plain="true">流程监控图</a> 
+			<a href="javascript:void(0)" onclick="openAuthBugTicketWindow();" class="easyui-linkbutton"
+				iconCls="icon-redo" plain="true">审批</a> 
+		</div>
+	</div>
+	
+	<div id="authBugTicketWindow" class="easyui-window" title="审批故障单"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<form id="authBugTicketForm" method="post">
+		<input type="hidden" name="flag" id="flag" />
+		<input type="hidden" name="id" />
+		<input type="hidden" name="taskId" />
+		<input type="hidden" name="procInsId" />
+		<table style="width:100%; height:100%; padding:5px" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="box_table_even">故障级别:</td>
+				<td class="box_table_odd">
+					<input  type="text" name="level" readonly="readonly"/>
+				</td>
+			</tr>
+			<tr>
+				<td class="box_table_even">故障局点:</td>
+				<td class="box_table_odd">
+					<input type="text" name="address" readonly="readonly" />
+				</td>
+			</tr>
+			<tr>
+				<td class="box_table_even">故障描述:</td>
+				<td class="box_table_odd">
+					<input typt="text" name="remark" readonly="readonly" />
+				</td>
+			</tr>
+			<tr>
+				<td class="box_table_even">建障时间:</td>
+				<td class="box_table_odd">
+					<input type="text" name="createtime" readonly="readonly" />
+				</td>
+			</tr>
+			<tr>
+				<td class="box_table_even">发生时间:</td>
+				<td class="box_table_odd">
+					<input type="text" name="happentime" readonly="readonly" />
+				</td>
+			</tr>
+			<tr>
+				<td class="box_table_even">审批备注:</td>
+				<td class="box_table_odd">
+					<textarea name="authRemark" rows="5" cols="30" width="90%"></textarea>
+				</td>
+			</tr>
+		</table>
+		<table id="authHistoryTable" class="easyui-datagrid"
+			title="故障单审批历史数据"
+			style="width: 550px; margin: 5px"
+			data-options="
+	            		method: 'POST',
+	            		singleSelect: false,
+	            		collapsible : false,
+	            		fitColumn : true,
+	            		rownumbers : true
+	            	">
+			<thead>
+				<tr>
+					<th data-options="field : 'authtype', align: 'center', width : 80">审批意见</th>
+					<th
+						data-options="field : 'authtime', align: 'center', width : 100">审批时间</th>
+					<th
+						data-options="field : 'username', align: 'right', width : 80">审批人</th>
+					<th
+						data-options="field : 'remark', align: 'right', width : 200">审批备注</th>
+				</tr>
+			</thead>
+		</table>
+		<table border="0" cellpadding="0" cellspacing="0"
+			class="operation">
+			<thead>
+				<tr>
+					<td style="padding-right : 20px" >
+						<a href="javascript:void(0)"
+							onclick="submitAuthBugTicket(1);" class="easyui-linkbutton" iconCls="icon-save"
+							plain="true">同意</a>
+						<a href="javascript:void(0)"
+							onclick="submitAuthBugTicket(0);" class="easyui-linkbutton" iconCls="icon-save"
+							plain="true">驳回</a>
+						<a href="javascript:void(0)"
+							onclick="closeAuthBugTicketWindow();" class="easyui-linkbutton" iconCls="icon-undo"
+							plain="true">返回</a>
+					</td>
+				</tr>
+			</thead>
+		</table>
+		</form>
+	</div>
+
+	<div id="activityImgWindow" class="easyui-window" title="查看流程监控图"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<img alt="查看流程监控图" src="../../images/loading.gif"
+			id="showActivityImgView"/>
+	</div>
+</body>
+</html>

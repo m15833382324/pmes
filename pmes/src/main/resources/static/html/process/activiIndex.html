@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	function openActiviImgWindow(){
+		var rows = $("#procTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要查看流程监控图的流程", "warning");
+		}else if(rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一条数据查询流程监控图", "warning");
+		}else{
+			// 1. 打开窗口
+			$("#activiImgWindow").window('open');
+			
+			// 2. 变更图片域的src属性值
+			$("#showActiviImgView").attr("src",
+						"../../proc/showActivityImg.do?procDefId="
+								+rows[0].procDefId+"&procInsId=" 
+								+ rows[0].procInsId);
+			
+		}
+	}
+</script>
+</head>
+
+<body style="padding: 5px" fit="true">
+
+	<table id="procTable" class="easyui-datagrid" fit="true"
+		title="首页&gt;流程管理&gt;流程监控"
+		style="width:auto; height:auto; margin: 5px" fit="true"
+		data-options="
+            		url: '../../proc/getActiviProcPage.do',
+            		method: 'POST',
+            		singleSelect: false,
+            		collapsible : false,
+            		fitColumn : true,
+            		rownumbers : true,
+            		pagination: true,
+            		pagesize : 10,
+            		toolbar : '#toolbar'
+            	">
+		<thead>
+			<tr>
+				<th data-options="field : 'procDefId', checkbox:true"></th>
+				<th data-options="field : 'procInsId', align: 'center', width : 200">流程实例标识</th>
+				<th data-options="field : 'procDefName', align: 'center', width : 200">流程定义名称</th>
+				<th data-options="field : 'taskName', align: 'right', width : 120">活动名称</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="toolbar" style="height: auto; text-align: right">
+		<div style="margin: 5px">
+			<a href="javascript:void(0)" onclick="openActiviImgWindow();"
+				class="easyui-linkbutton" iconCls="icon-search" plain="true">流程监控图</a>
+		</div>
+	</div>
+	
+	<div id="activiImgWindow" class="easyui-window" title="查看流程图片"
+		style="width: 600px; height: 400px; text-align:center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<img alt="查看流程定义图" src="../../images/loading.gif"
+			id="showActiviImgView"/>
+	</div>
+</body>
+</html>

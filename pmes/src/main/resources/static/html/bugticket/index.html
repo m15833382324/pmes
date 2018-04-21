@@ -1,0 +1,426 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	function openAddBugTicketWindow(){
+		$("#addBugTicketWindow").window('open');
+	}
+	function closeAddBugTicketWindow(){
+		$("#addBugTicketForm").form('reset');
+		$("#addBugTicketWindow").window('close');
+	}
+	function submitAddBugTicketForm(){
+		$("#addBugTicketForm").form('submit', {
+			'url' : '../../bugticket/addBugTicket',
+			'onSubmit' : function(){
+				var levelText = $("#addLevel").combobox("getValue");
+				var addressText = $("#addAddress").combobox("getValue");
+				var remarkText = $("#addRemark").val();
+				var happentimeText = $("#addHappentime").datetimebox('getValue');
+				if(levelText == "" || levelText === "---请选择---"){
+					$.messager.alert("PMES系统提示", "请选择故障级别", "warning");
+					return false;
+				}
+				if(addressText == "" || addressText === "---请选择---"){
+					$.messager.alert("PMES系统提示", "请选择故障局点", "warning");
+					return false;
+				}
+				if(remarkText == ""){
+					$.messager.alert("PMES系统提示", "请填写故障描述", "warning");
+					return false;
+				}
+				if(happentimeText == ""){
+					$.messager.alert("PMES系统提示", "请填写故障发生时间", "warning");
+					return false;
+				}
+				$.messager.progress();
+				return true;
+			},
+			'success' : function( r ){
+				$.messager.progress('close');
+				var jsonObj = eval( "(" + r + ")" );
+				if(jsonObj.success){
+					$.messager.alert("PMES系统提示", "故障单新增成功", "info", function(){
+						// 1. 关闭新增窗口
+						$("#addBugTicketWindow").window('close');
+						// 2. 清空表单数据
+						$("#addBugTicketForm").form("reset");
+						// 3. 刷新故障单分页查询数据表格
+						$("#bugTicketTable").datagrid("reload");
+					});
+				}else{
+					$.messager.alert("PMES系统提示", "故障单新增失败", "error");
+				}
+			}
+		});
+	}
+	function openEditBugTicketWindow(){
+		// 判断,选中的故障单状态是否是新建状态
+		var rows = $("#bugTicketTable").datagrid('getSelections');
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要修改的故障单", "warning");
+		}else if(rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一条故障单修改", "warning");
+		}else{
+			// 验证修改的故障单状态为新建
+			var statusText = rows[0].status;
+			if(statusText != '新建'){
+				$.messager.alert("PMES系统提示", "要修改的故障单状态必须为新建状态", "warning");
+			}else{
+				// 打开弹出窗口
+				$("#editBugTicketWindow").window('open');
+				// 初始化修改表单数据
+				$("#editBugTicketForm").form('load', rows[0]);
+			}
+		}
+	}
+	function closeEditBugTicketWindow(){
+		$("#editBugTicketWindow").window('close');
+		$("#editBugTicketForm").form("clear");
+	}
+	function submitEditBugTicketForm(){
+		$("#editBugTicketForm").form('submit', {
+			'url' : '../../bugticket/editBugTicket.do',
+			'onSubmit' : function(){
+				$.messager.progress();
+				return true;
+			},
+			'success' : function( r ){
+				$.messager.progress("close");
+				var jsonObj = eval("(" + r + ")");
+				if(jsonObj.success){
+					$.messager.alert("PMES系统提示", "故障单修改成功", "info", function(){
+						// 1. 关闭窗口
+						$("#editBugTicketWindow").window('close');
+						
+						// 2. 刷新当前显示的分页页面
+						$("#bugTicketTable").datagrid("reload");
+					});
+				}else{
+					$.messager.alert("PMES系统提示", "故障单修改失败", "error");
+				}
+			}
+		});
+	}
+	function deleteBugTickets(){
+		// 1. 验证是否选了是数据
+		var rows = $("#bugTicketTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要删除的故障单", "warning");
+		}else{
+			// 检验要删除的故障单都是新建状态的故障单
+			var flag = true;
+			$.each(rows, function(i, n){
+				var statusText = n.status;
+				if(statusText != '新建'){
+					$.messager.alert("PMES系统提示", "要删除的故障单必须是新建状态故障单", "warning");
+					flag = false;
+				}
+			});
+			if(flag){
+				$.messager.confirm("PMES系统提示", "请确认是否删除故障单", function(choose){
+					if(choose){
+						// 准备提交请求的参数 : {btid[0] : 1, btid[1] : 3}
+						var jsonParams = {};
+						$.each(rows, function(i, n){
+							jsonParams['btid['+i+']'] = n.id;
+						});
+						$.ajax({
+							'url' : '../../bugticket/deleteBugTickets.do',
+							'type': 'POST',
+							'beforeSend':function(){
+								$.messager.progress();
+								return true;
+							},
+							'success':function(r){
+								$.messager.progress('close');
+								if(r.success){
+									$.messager.alert("PMES系统提示", "删除故障单成功", "info", function(){
+										// 刷新数据表格
+										$("#bugTicketTable").datagrid('reload');
+									});
+								}else{
+									$.messager.alert("PMES系统提示", "删除故障单失败", "error");
+								}
+							},
+							'data':jsonParams
+						});
+					}
+				});
+			}
+		}
+	}
+	function paizhang(){
+		// 1. 验证用户选择了唯一了一条数据进行派障
+		var rows = $("#bugTicketTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要派障的故障单", "warning");
+		}else if(rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择唯一的一条记录派障", "warning");
+		}else{
+			// 2. 验证用户选择派障的故障单状态为新建状态
+			var statusText = rows[0].status;
+			if(statusText === '新建'){
+				$.ajax({
+					'url':'../../bugticket/paizhang.do',
+					'type':'POST',
+					'data':'id='+rows[0].id,
+					'beforeSend':function(){
+						$.messager.progress();
+						return true;
+					},
+					'success':function(r){
+						$.messager.progress('close');
+						if(r.success){
+							$.messager.alert("PMES系统提示", "故障单派障成功", "info", function(){
+								$("#bugTicketTable").datagrid('reload');
+							});
+						}else{
+							$.messager.alert("PMES系统提示", "故障单派障失败", "error");
+						}
+					}
+				});
+			}else{
+				$.messager.alert("PMES系统提示", "要派障的故障单必须是新建状态故障单", "warning");
+			}
+		}
+	}
+	function openAuthHistoryWindow(){
+		// 审批历史记录,需要选定一个故障单查看
+		var rows = $("#bugTicketTable").datagrid("getSelections");
+		if(rows.length == 0){
+			$.messager.alert("PMES系统提示", "请选择要查看审批历史的故障单", "warning");
+		}else if(rows.length > 1){
+			$.messager.alert("PMES系统提示", "只能选择一个故障单查看审批历史", "warning");
+		}else{
+			if(rows[0].status != '新建'){
+				$("#authHistoryWindow").window('open');
+				$("#authHistoryTable").datagrid({
+					'url' : '../../bugticket/getAuthHistoryByBugTicket.do',
+					'queryParams' : {
+						'id' : rows[0].id
+					}
+				});
+			}else{
+				$.messager.alert("PMES系统提示", "只能选择非新建状态的故障单查看审批历史", "warning");
+			}
+		}
+	}
+</script>
+</head>
+
+<body style="padding: 5px" fit="true">
+
+	<table id="bugTicketTable" class="easyui-datagrid"
+		title="首页&gt;故障管理&gt;故障单维护"
+		style="width:auto; height:auto; margin: 5px" fit="true"
+		data-options="
+            		url: '../../bugticket/getBugTicketByPage',
+            		method: 'POST',
+            		singleSelect: false,
+            		collapsible : false,
+            		fitColumns : true,
+            		rownumbers : true,
+            		pagination: true,
+            		pagesize : 10,
+            		toolbar : '#toolbar'
+            	">
+		<thead>
+			<tr>
+				<th data-options="field : 'id', checkbox:true"></th>
+				<th data-options="field : 'level', align: 'center', width : 80">故障级别</th>
+				<th data-options="field : 'address', align: 'center', width : 80">故障局点</th>
+				<th data-options="field : 'remark', align: 'right', width : 150">故障描述</th>
+				<th data-options="field : 'happentime', align: 'right', width : 80">故障发生时间</th>
+				<th data-options="field : 'createtime', align: 'right', width : 80">建障时间</th>
+				<th data-options="field : 'status', align: 'right', width : 30">状态</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="toolbar" style="height: auto; text-align: right">
+		<div style="margin: 5px">
+			<a href="javascript:void(0)" onclick="openAddBugTicketWindow();" class="easyui-linkbutton"
+				iconCls="icon-add" plain="true">新增故障单</a> <a
+				href="javascript:void(0)" onclick="deleteBugTickets();" class="easyui-linkbutton"
+				iconCls="icon-remove" plain="true">删除故障单</a> <a
+				href="javascript:void(0)" onclick="openEditBugTicketWindow();" class="easyui-linkbutton"
+				iconCls="icon-edit" plain="true">修改故障单</a> <a
+				href="javascript:void(0)" onclick="paizhang();" class="easyui-linkbutton"
+				iconCls="icon-redo" plain="true">派障</a> <a href="javascript:void(0)"
+				onclick="openAuthHistoryWindow();" class="easyui-linkbutton" iconCls="icon-search"
+				plain="true">查看审批历史</a>
+		</div>
+	</div>
+	
+	<div id="authHistoryWindow" class="easyui-window" title="故障单审批历史"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<table id="authHistoryTable" class="easyui-datagrid"
+			title="故障单审批历史数据"
+			style="width: 550px; height: 350px; margin: 5px"
+			data-options="
+	            		method: 'POST',
+	            		singleSelect: false,
+	            		collapsible : false,
+	            		fitColumn : true,
+	            		rownumbers : true
+	            	">
+			<thead>
+				<tr>
+					<th data-options="field : 'authtype', align: 'center', width : 80">审批意见</th>
+					<th
+						data-options="field : 'authtime', align: 'center', width : 100">审批时间</th>
+					<th
+						data-options="field : 'username', align: 'right', width : 80">审批人</th>
+					<th
+						data-options="field : 'remark', align: 'right', width : 200">审批备注</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+	
+	<div id="editBugTicketWindow" class="easyui-window" title="修改故障单"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<form id="editBugTicketForm" method="post">
+		<input type="hidden" name="id" />
+		<table border="0" cellpadding="0" cellspacing="0" class="box_table"
+			id="box_table2">
+			<thead id="userTable">
+				<tr>
+					<td class="box_table_even">故障级别：</td>
+					<td class="box_table_odd"><span class="in"> <select
+							id="editLevel" name="level" class="easyui-combobox"
+							data-options="width: 150">
+								<option selected="selected">---请选择---</option>
+								<option>A</option>
+								<option>B</option>
+								<option>C</option>
+						</select> <span class="star">*</span></span></td>
+				</tr>
+				<tr>
+					<td class="box_table_even">故障局点：</td>
+					<td class="box_table_odd"><span class="in"> <select
+							id="editAddress" name="address" class="easyui-combobox"
+							data-options="width: 150">
+								<option selected="selected">---请选择---</option>
+								<option>白云分局</option>
+								<option>花都分局</option>
+								<option>芳村分局</option>
+						</select> <span class="star">*</span></span></td>
+				</tr>
+				<tr>
+					<td class="box_table_even">故障描述：</td>
+					<td class="box_table_odd"><span class="in"> 
+					<textarea id="editRemark" name="remark" rows="5" cols="30" style="width:90%"></textarea>
+					<span class="star">*</span></span></td>
+				</tr>
+				<tr>
+					<td class="box_table_even">故障发生时间：</td>
+					<td class="box_table_odd"><span class="in"> 
+					<input id="editHappentime" type="text" class="easyui-datetimebox" name="happentime" />
+					<span class="star">*</span></span></td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		<table border="0" cellpadding="0" cellspacing="0"
+			class="operation">
+			<thead>
+				<tr>
+					<td style="padding-right : 20px" >
+						<a href="javascript:void(0)"
+							onclick="submitEditBugTicketForm();" class="easyui-linkbutton" iconCls="icon-save"
+							plain="true">保存</a>
+						<a href="javascript:void(0)"
+							onclick="closeEditBugTicketWindow();" class="easyui-linkbutton" iconCls="icon-undo"
+							plain="true">返回</a>
+					</td>
+				</tr>
+			</thead>
+		</table>
+	</form>
+	</div>
+
+	<div id="addBugTicketWindow" class="easyui-window" title="新增故障单"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<form id="addBugTicketForm" method="post">
+		<table border="0" cellpadding="0" cellspacing="0" class="box_table"
+			id="box_table2">
+			<thead id="userTable">
+				<tr>
+					<td class="box_table_even">故障级别：</td>
+					<td class="box_table_odd">
+						<span class="in"> 
+							<select id="addLevel" name="level" class="easyui-combobox" data-options="width: 150">
+									<option selected="selected">---请选择---</option>
+									<option>A</option>
+									<option>B</option>
+									<option>C</option>
+							</select> 
+							<span class="star">*</span>
+						</span></td>
+				</tr>
+				<tr>
+					<td class="box_table_even">故障局点：</td>
+					<td class="box_table_odd"><span class="in"> <select
+							id="addAddress" name="address" class="easyui-combobox"
+							data-options="width: 150">
+								<option selected="selected">---请选择---</option>
+								<option>白云分局</option>
+								<option>花都分局</option>
+								<option>芳村分局</option>
+						</select> <span class="star">*</span></span></td>
+				</tr>
+				<tr>
+					<td class="box_table_even">故障描述：</td>
+					<td class="box_table_odd"><span class="in"> 
+					<textarea id="addRemark" name="remark" rows="5" cols="30" style="width:90%"></textarea>
+					<span class="star">*</span></span></td>
+				</tr>
+				<tr>
+					<td class="box_table_even">故障发生时间：</td>
+					<td class="box_table_odd"><span class="in"> 
+					<input id="addHappentime" type="text" class="easyui-datetimebox" name="happentime" />
+					<span class="star">*</span></span></td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		<table border="0" cellpadding="0" cellspacing="0"
+			class="operation">
+			<thead>
+				<tr>
+					<td style="padding-right : 20px" >
+						<a href="javascript:void(0)"
+							onclick="submitAddBugTicketForm();" class="easyui-linkbutton" iconCls="icon-save"
+							plain="true">保存</a>
+						<a href="javascript:void(0)"
+							onclick="closeAddBugTicketWindow();" class="easyui-linkbutton" iconCls="icon-undo"
+							plain="true">返回</a>
+					</td>
+				</tr>
+			</thead>
+		</table>
+	</form>
+	</div>
+
+	<div id="procImgWindow" class="easyui-window" title="查看流程图片"
+		style="width: 600px; height: 400px; text-align: center"
+		data-options="iconCls:'icon-add', modal:true, closed: true">
+		<img alt="查看流程定义图" src="../../images/loading.gif"
+			id="showProcImgView" />
+	</div>
+</body>
+</html>

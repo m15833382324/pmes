@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script type="text/javascript">
+	$(function(){
+		$('#pmesTreeMenu').tree({
+			'url':'../menu/init',
+			'onDblClick': function(node){ // node参数代表,当前节点对象,这个对象是JSON对象.
+				// 新增标签页 | 选项卡
+				$("#workArea").tabs("add", {
+					'title': node.text,    
+				    'content':'<iframe name="workArea'
+				    			+node.id+
+				    			'" src="..'+node.url
+				    			+'" frameborder="0" height="100%" width="100%"/>',    
+				    'closable':true
+				});
+			}
+		});
+	});
+	function logoutSystem(){
+		$.get("../logout",function(r){
+			if(r.flag){
+				window.location.href=r.url;
+			}else{
+				alert(r.msg);
+			}
+		},"json");		
+	}
+</script>
+</head>
+<body class="easyui-layout">
+	<div data-options="region:'north',split:false" style="height: 100px;">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td width="263" background="../images/top_bg.gif"><img
+					src="../images/top_01.gif" width="145" height="29" /></td>
+				<td width="1148" height="29" background="../images/top_bg.gif"
+					class="top">Welcome,<span class="top_name">张三</span>
+					今天是2012年04月10日 周二 12:30:45
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" background="../images/banner_bg.gif">
+					<table width="100%" height="66" border="0" cellpadding="0"
+						cellspacing="0">
+						<tr>
+							<td width="1058" align="left"><img src="../images/logo.gif"
+								width="348" height="65" /></td>
+							<td width="87"><img src="../images/botton_08.gif" width="87"
+								height="52" /></td>
+							<td width="70"><img src="../images/botton_09.gif" width="65"
+								height="52" /></td>
+							<td width="70"><img src="../images/botton_10.gif" width="67"
+								height="52" /></td>
+							<td width="126"><img src="../images/botton_11.gif" width="63" height="52" onclick="logoutSystem();"/></td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div data-options="region:'south',split:false" style="height: 38px;">
+		<table width="100%" height="36" border="0" cellpadding="0"
+			cellspacing="0">
+			<tr>
+				<td background="../images/botom_bg.gif" class="font_right"><a
+					href="#">PMES流程管理引擎系统上线啦！</a></td>
+				<td width="10%" align="center" background="../images/botom_bg.gif"><img
+					src="../images/arrow.gif" alt="" width="16" height="16" border="0"
+					align="middle" /><a href="#" class="more">更多公告</a></td>
+			</tr>
+		</table>
+	</div>
+	<div data-options="region:'west',title:'流程管理引擎系统',split:false"
+		style="width: 200px;">
+		<ul id="pmesTreeMenu" class="easyui-tree" 
+			data-options="
+				animate:true,
+				method:'POST'
+			"></ul>
+	</div>
+	<div id="workArea" 
+		class="easyui-tabs"
+		data-options="region:'center',title:'工作区'" 
+		style="padding: 0px; margin: 0px">
+	<div title="欢迎页面" data-options="closable: true">
+		<table border="0" cellpadding="0" cellspacing="0" class="table_border" style="margin: 0px; padding: 0px">
+				<tr>
+					<td><table width="100%" border="0" cellpadding="0"
+							cellspacing="0" class="table_right">
+							<tr>
+								<td width="25" height="26" align="right"><img
+									src="../images/ico_location.gif" width="16" height="15" /></td>
+								<td><strong>位置：</strong>首页</td>
+							</tr>
+						</table></td>
+				</tr>
+				<tr>
+					<td><table width="100%" height="460" border="0"
+							cellspacing="0">
+							<tr>
+								<td height="462" align="center" background="../images/wel_bg.jpg"><img src="../images/wel.jpg" width="780" height="462" border="0" /></td>
+							</tr>
+						</table></td>
+				</tr>
+		</table>
+	</div>
+	</div>
+</body>

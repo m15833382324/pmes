@@ -1,0 +1,454 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	$(function() {
+		// 为下拉列表增加事件
+		$('#level').combobox({'onChange' :function(newValue, oldValue) { // 下拉列表数据变动触发
+								var selectElement = $("#manager");
+								if (selectElement.length == 0) {
+									$("#managerTR").remove();
+								}
+								var trArray = $("#editUserTable > tr");
+								// 如果trArray数组长度为6,则需要增加一行数据.
+								if (trArray.length == 4) {
+									var trStr = "";
+									trStr += '<tr id="managerTR">';
+									trStr += '<td class="box_table_even">上级领导：</td>';
+									trStr += '<td class="box_table_odd"><span class="in"> ';
+									trStr += '<select id="manager" name="mid"';
+									trStr += ' class="easyui-combobox"';
+									trStr += ' data-options="valueField: \'id\' , textField: \'username\' , url:\'../../user/getManagers.do\', width: 150">';
+									trStr += '</select> <span class="star">*</span></span></td></tr>';
+									// alert(newValue);
+									$("#editUserTable").append(trStr);
+									reloadManagerSelect(newValue);
+								}
+								// 获取easyui 中combobox值
+								var levelStr = $('#level').combobox('getValue');
+								if (levelStr === '管理员' || levelStr === '经理'|| levelStr === '---请选择---') {
+									// JQuery中,对象都有一个函数,remove() . 删除当前对象.
+									$("#managerTR").remove();
+								} else {
+										$.ajax({
+												'url' : '../../user/getManagers.do',
+												'type' : "POST",
+												'data' : 'level=' + levelStr,
+												'beforeSend' : function() {
+													return true;
+												},
+												'success' : function(r) {
+													// r 的格式,是一个数组,数组中保存的是用户对象.
+													// 用户的ID是下拉列表中<option>的value值
+													// 用户的姓名username,是下拉列表中显示的字符串
+													var jsonArray = []; // 要显示的下拉列表的初始值
+													$.each(r,function(i,n) {
+														// jsonArray[0].id
+														var jsonObj = {};
+														jsonObj.id = n.id; // 传递的参数值
+														jsonObj.username = n.username; // 显示的文本信息.
+														if (i == 0) {
+															jsonObj.selected = true;
+														}
+														jsonArray.push(jsonObj);
+													});
+													$("#manager").combobox("loadData",jsonArray);
+												}
+											});
+								}
+							}
+						});
+		// 为下拉列表增加事件
+		$('#insertUserLevel').combobox({'onChange' : function(newValue, oldValue) { // 下拉列表数据变动触发
+								var trArray = $("#insertUserTable > tr");
+								// 如果trArray数组长度为6,则需要增加一行数据.
+								if (trArray.length == 6) {
+									var trStr = "";
+									trStr += '<tr id="insertUserManagerTR">';
+									trStr += '<td class="box_table_even">上级领导：</td>';
+									trStr += '<td class="box_table_odd"><span class="in"> ';
+									trStr += '<select id="insertUserManager" name="mid"';
+									trStr += ' class="easyui-combobox"';
+									trStr += ' data-options="valueField: \'id\' , textField: \'username\' , url:\'../../user/getManagers.do\', width: 150">';
+									trStr += '</select> <span class="star">*</span></span></td></tr>';
+									// alert(newValue);
+									$("#insertUserTable").append(trStr);
+									reloadInsertUserManagerSelect(newValue);
+								}
+								// 获取easyui 中combobox值
+								var levelStr = $('#insertUserLevel').combobox('getValue');
+								if (levelStr === '管理员' || levelStr === '经理'|| levelStr === '---请选择---') {
+									// JQuery中,对象都有一个函数,remove() . 删除当前对象.
+									$("#insertUserManagerTR").remove();
+								} else {
+										$.ajax({
+												'url' : '../../user/getManagers.do',
+												'type' : "POST",
+												'data' : 'level=' + levelStr,
+												'beforeSend' : function() {
+													return true;
+												},
+												'success' : function(r) {
+													// r 的格式,是一个数组,数组中保存的是用户对象.
+													// 用户的ID是下拉列表中<option>的value值
+													// 用户的姓名username,是下拉列表中显示的字符串
+													var jsonArray = []; // 要显示的下拉列表的初始值
+													$.each(r,function(i,n) {
+														// jsonArray[0].id
+														var jsonObj = {};
+														jsonObj.id = n.id; // 传递的参数值
+														jsonObj.username = n.username; // 显示的文本信息.
+														if (i == 0) {
+															jsonObj.selected = true;
+														}
+														jsonArray.push(jsonObj);
+													});
+													$("#insertUserManager").combobox("loadData",jsonArray);
+												}
+											});
+								}
+							}
+						});
+	});
+
+	function reloadInsertUserManagerSelect(levelStr) {
+		var level = 0;
+		if (levelStr === '职员') {
+			level = 1;
+		} else {
+			level = 2;
+		}
+		$("#insertUserManager").combobox({
+			'url' : '../../user/getManagers.do?level=' + level,
+			'valueField' : 'id',
+			'textField' : 'username'
+		});
+	}
+	function reloadManagerSelect(levelStr) {
+		var level = 0;
+		if (levelStr === '职员') {
+			level = 1;
+		} else {
+			level = 2;
+		}
+		$("#manager").combobox({
+			'url' : '../../user/getManagers.do?level=' + level,
+			'valueField' : 'id',
+			'textField' : 'username'
+		});
+	}
+
+	function toAddUser() {
+		$("#insertUserWindow").window('open');
+	}
+	function openEditUserWindow() {
+		// 1. 判断,只能选择一行数据
+		var rows = $("#userTable").datagrid('getSelections');
+		if (rows.length == 0) {
+			$.messager.alert("PMES系统提示", "请选择要修改的用户", "warning");
+		} else if (rows.length > 1) {
+			$.messager.alert("PMES系统提示", "只能选择一条数据修改", "warning");
+		} else {
+			// 2. 开启一个弹窗
+			$("#editUserWindow").window('open');
+			$("#editUserForm").form('load', rows[0]);
+		}
+	}
+
+	function editUser() {
+		// 'url' : '../../user/modifyUser.do',
+		// 1. 提交表单
+		$("#editUserForm").form('submit', {
+			'url' : '../../user/modifyUser.do',
+			'onSubmit' : function() {
+				$.messager.progress();
+				return true;
+			},
+			'success' : function(r) {
+				$.messager.progress('close');
+				var resultObj = eval('(' + r + ')');
+				// 2. 显示结果
+				if (resultObj.success) {
+					// alert 不会中断浏览器显示线程.如果需要在alert提示信息后,在用户点击确认按钮之后执行一些代码.可以通过回调函数处理.
+					$.messager.alert("PMES系统提示", "修改用户成功", "info", function() {
+						$("#userTable").datagrid('reload');
+						// 3. 关闭修改用户窗口
+						$("#editUserWindow").window('close');
+					});
+				} else {
+					$.messager.alert("PMES系统提示", "修改用户失败", "error");
+				}
+
+			}
+		});
+	}
+	function closeAddButton(){
+		$("#userTable").datagrid('reload');
+		$(".panel-tool-close").click();
+	}
+	function addUserByAjax() {
+		$("#insertUserForm").form('submit', {
+			'url' : '../../user/addUser.do',
+			'onSubmit' : function() {
+				var loginpswd = $("#loginpswd").val();
+				var repswd = $("#repswd").val();
+				if (loginpswd === repswd) {
+					$.messager.progress();
+					return true;
+				}
+				$.messager.alert("PMES系统提示", "两次密码输入不一致", "warning");
+				return false;
+			},
+			'success' : function(r) {
+				$.messager.progress('close');
+				var resultObj = eval('(' + r + ')');
+				if (resultObj.success) {
+					$.messager.alert("PMES系统提示", "用户新增成功", "info", function() {
+						$("#userTable").datagrid('reload');
+						$("#insertUserWindow").window('close');
+					});
+				} else {
+					$.messager.alert("PMES系统提示", "用户新增失败", "error");
+				}
+			}
+		});
+	}
+
+	function deleteUsers() {
+		// 1. 判断是否选择了要删除的数据
+		var rows = $("#userTable").datagrid("getSelections");
+		if (rows.length == 0) {
+			$.messager.alert("PMES系统提示", "请选择要删除的数据", "warning");
+		} else {
+			// 2. 提示用户确认删除, 提交删除请求
+			$.messager.confirm("PMES系统提示", "请确认是否删除选择的用户", function(choose) {
+				// 用户选择确认删除
+				if (choose) {
+					// 提交请求
+					// 准备请求参数   格式 : JSON对象或JSON数组
+					var jsonParam = {};
+					// 将要删除的数据,保存在JSON对象中
+					// jsonParam <-> RequestParameter
+					// jsonParam.users[0]  <->  RequestParameter.users.get(0)
+					// jsonParam.users[0].id <-> RequestParameter.users.get(0).getId()
+					$.each(rows, function(i, n) {
+						jsonParam['users[' + i + '].id'] = n.id;
+					});
+
+					$.ajax({
+						'url' : '../../user/deleteUsersByParams.do',
+						'data' : jsonParam,
+						'type' : 'POST',
+						'beforeSend' : function() {
+							$.messager.progress();
+							return true;
+						},
+						'success' : function(r) {
+							$.messager.progress('close');
+							if (r.success) {
+								$.messager.alert("PMES系统提示", "删除成功", "info",
+										function() {
+											// 刷新用户分页查询数据表格
+											$("#userTable").datagrid('reload');
+										});
+							} else {
+								$.messager.alert("PMES系统提示", "删除失败", "error");
+							}
+						}
+					});
+				}
+			});
+			// 3. 显示结果并刷新显示逻辑.
+
+		}
+	}
+</script>
+</head>
+
+<body class="easyui-layout" fit="true">
+	<table id="userTable" class="easyui-datagrid" fit="true"
+		title="首页&gt;权限管理&gt;用户维护"
+		style="width:auto; height:auto; margin: 5px"
+		data-options="url: '../../user/getUsersByPage',
+           			method: 'POST',
+            		singleSelect: false,
+            		collapsible : false,
+            		fitColumns:true,
+            		rownumbers : true,
+            		pagination: true,
+            		pagesize : 10,
+            		toolbar : '#toolbar'
+            		">
+		<thead>
+			<tr>
+				<th data-options="field : 'id', checkbox:true"></th>
+				<th data-options="field : 'loginname', align: 'center',width:120">登录名</th>
+				<th data-options="field : 'username',width:140">用户姓名</th>
+				<th data-options="field : 'email', align: 'right',width:120">电子邮件</th>
+				<th data-options="field : 'createtime',width:150">创建时间</th>
+				<th data-options="field : 'level'">岗位级别</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="toolbar" style="height: auto; text-align: right">
+		<div style="margin: 5px">
+			<a href="javascript:void(0)" onclick="toAddUser();" class="easyui-linkbutton" iconCls="icon-add" plain="true">新增用户</a> 
+			<a href="javascript:void(0)" onclick="deleteUsers();" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除用户</a>
+			<a href="javascript:void(0)" onclick="openEditUserWindow();" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改用户</a>
+		</div>
+	</div>
+
+	<div id="insertUserWindow" class="easyui-window" title="用户新增"
+		style="width: 600px; height: 400px" data-options="iconCls:'icon-add', modal:true, closed: true">
+		<form id="insertUserForm" method="post">
+			<table border="0" cellpadding="0" cellspacing="0" class="table_border">
+				<tr>
+					<td><table border="0" cellpadding="0" cellspacing="0"
+							class="box_table" id="box_table2">
+							<thead id="insertUserTable">
+								<tr>
+									<td class="box_table_even">登录帐号：</td>
+									<td class="box_table_odd"><span class="in"> <input name="loginname" type="text" class="easyui-validatebox"
+											data-options="required:true, validType:'length[6, 24]'" /> <span
+											class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">用户姓名：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											class="easyui-validatebox" data-options="required:true"
+											name="username" type="text" /> <span class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">电子邮件：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											class="easyui-validatebox"
+											data-options="required:true, validType:['email','length[6,20]']"
+											name="email" type="text" /> <span class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">登录密码：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											class="easyui-validatebox" id="loginpswd"
+											data-options="required:true, validType:'length[6, 18]'"
+											name="loginpswd" type="password" /> <span class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">密码确认：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											class="easyui-validatebox" id="repswd"
+											data-options="required:true" name="repswd" type="password" />
+											<span class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">员工级别：</td>
+									<td class="box_table_odd"><span class="in"> <select
+											id="insertUserLevel" name="level" class="easyui-combobox"
+											data-options="width: 150">
+												<option>---请选择---</option>
+												<option>职员</option>
+												<option>组长</option>
+												<option>经理</option>
+												<option>管理员</option>
+										</select> <span class="star">*</span></span></td>
+								</tr>
+
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+						<table border="0" cellpadding="0" cellspacing="0"
+							class="operation">
+							<thead>
+								<tr>
+									<td><input type="button" value="保存"
+										onclick="addUserByAjax();" /> <input type="button" value="返回"
+										onclick="closeAddButton();"/></td>
+								</tr>
+							</thead>
+						</table></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+
+	<div id="editUserWindow" class="easyui-window" title="用户修改"
+		style="width: 600px; height: 400px"
+		data-options="iconCls:'icon-edit',modal:true, closed: true">
+		<form id="editUserForm" method="post">
+			<input type="hidden" name="id" value="${editUser.id}" />
+			<table border="0" cellpadding="0" cellspacing="0"
+				class="table_border">
+				<tr>
+					<td>
+						<table border="0" cellpadding="0" cellspacing="0"
+							class="box_table" id="box_table2">
+							<thead id="editUserTable">
+								<tr>
+									<td class="box_table_even">登录帐号：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											name="loginname" type="text" class="easyui-validatebox"
+											data-options="required:true, validType:'length[6, 24]'"
+											value="${editUser.loginname}" /> <span class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">用户姓名：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											class="easyui-validatebox" data-options="required:true"
+											name="username" type="text" value="${editUser.username}" />
+											<span class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">电子邮件：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											class="easyui-validatebox"
+											data-options="required:true, validType:['email','length[6,20]']"
+											name="email" type="text" value="${editUser.email}" /> <span
+											class="star">*</span></span></td>
+								</tr>
+								<tr>
+									<td class="box_table_even">员工级别：</td>
+									<td class="box_table_odd"><span class="in"> <select
+											id="level" name="level" class="easyui-combobox"
+											data-options="width: 150">
+												<option>---请选择---</option>
+												<option>职员</option>
+												<option>组长</option>
+												<option>经理</option>
+												<option>管理员</option>
+										</select> <span class="star">*</span></span></td>
+								</tr>
+								<tr id='managerTR'>
+									<td class="box_table_even">上级领导：</td>
+									<td class="box_table_odd"><span class="in"> <input
+											type="hidden" name="mid" /> <input type="text" name="mname"
+											readonly="readonly" /> <span class="star">*</span></span></td>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+						<table border="0" cellpadding="0" cellspacing="0"
+							class="operation">
+							<thead>
+								<tr>
+									<td><input type="button" value="保存" onclick="editUser();" />
+										<input type="button" value="返回"
+										onclick="closeAddButton();" /></td>
+								</tr>
+							</thead>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</body>
+</html>

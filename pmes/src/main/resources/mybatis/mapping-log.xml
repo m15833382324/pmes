@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.OperateLogDao">
+	
+	<!-- 根据ID查询日志 -->
+	<select id="getLogById" resultType="user">
+		select * from t_operate_log
+			where id = #{id}
+	</select>
+	
+	<!-- 分页查询日志 -->
+	<select id="getLogsByPage" resultType="com.example.demo.entity.OperateLog">
+		select l.* , u.username as username
+			from 
+				t_operate_log l
+					left join 
+				t_user u
+					on l.userid = u.id
+			limit #{startIndex}, #{pagesize}
+	</select>
+	
+	<select id="getLogsCount" resultType="int">
+		select count(id) from t_operate_log
+	</select>
+	
+	<insert id="insertOperateLog">
+		insert into t_operate_log(userid,operatenode,operatedate,operatemodel,operatetype,operateip)
+			values(#{userid},#{operatenode},#{operatedate},#{operatemodel},#{operatetype},#{operateip})
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+

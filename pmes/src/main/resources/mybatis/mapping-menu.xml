@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.MenuDao">
+	
+	<!-- 查询所有菜单数据,不考虑级联查询 -->
+	<select id="getAllMenus" resultType="com.example.demo.entity.Menu">
+		select * from t_menu
+	</select>
+	
+	<!-- 级联查询, 查询所有根节点 -->
+	<resultMap type="com.example.demo.entity.Menu" id="menuMap">
+		<id column="id" property="id" />
+		<result column="text" property="text" />
+		<result column="url" property="url" />
+		<result column="pid" property="pid" />
+		<collection property="children"
+				javaType="java.util.ArrayList"
+				ofType="com.example.demo.entity.Menu" 
+				select="getAllRootMenus"
+				column="id"
+			/>
+	</resultMap>
+	
+	<select id="getAllRootMenus" resultMap="menuMap">
+		select * from t_menu where pid = #{pid}
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+

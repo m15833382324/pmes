@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.AuthHistoryDao">
+
+	<!-- 根据故障单查询审批历史 -->
+	<select id="selectAuthHistoryByBugTicket" resultType="com.example.demo.entity.AuthHistory">
+		select ah.* , u.username
+			from 
+				t_auth_history ah
+					left join
+				t_user u
+					on ah.userid = u.id
+			where 
+				ah.btid = #{btid}
+	</select>
+	
+	<insert id="insertAuthHistory">
+		insert into t_auth_history(userid,authtime,authtype,remark,btid)
+			values(#{userid},#{authtime},#{authtype},#{remark},#{btid})
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+

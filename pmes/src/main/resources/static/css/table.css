@@ -1,0 +1,103 @@
+﻿@charset "utf-8";
+/* CSS Document */
+
+/* CSS Document */
+
+   /* 隔列换色 */
+   img{border:0;}
+ .box_table{
+	width:100%;
+	overflow:hidden;
+	background-color:#FFFFFF;
+	color: #a35353;
+	font-size: 12px;
+	font-family: Verdana, Arial, Helvetica, sans-serif, "宋体";
+	border:0;
+	margin-bottom: 5px;
+} 
+ .box_table td{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+   .box_table_odd{
+	text-align: left;
+	padding-left: 5px;
+	color: #000000;
+
+}
+   .box_table_even{
+	color: #a35353;
+	text-align: right;
+	padding-right: 5px;
+	width: 100px;
+}
+   
+   /* 隔行换色 */
+  .box_num_table{
+	width:99%;
+	color: #000000;
+	font-family: Verdana, Arial, Helvetica, sans-serif, "宋体";
+	font-size: 12px;
+	padding-bottom: 5px;
+	border: 1px solid #e3ba89;
+	margin-top: 5px;
+	}
+.box_num_table td{
+	text-align:center;
+	padding:5px;
+	border-bottom-width: 1px;
+	border-bottom-style: dotted;
+	border-bottom-color: #e3ba89;
+	}
+
+ .box_num_table thead td{
+	text-align:center;
+	color:#000;
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-bottom-style: solid;
+	border-top-color: #e3ba89;
+	border-right-color: #e3ba89;
+	border-bottom-color: #e3ba89;
+	border-left-color: #e3ba89;
+	line-height: 26px;
+	padding: 0px;
+	background-color: #fef7e2;
+}
+  .page_table{
+	width:99%;
+	margin-right: 5px;
+	margin-left: 5px;
+} 
+
+/*报表样式*/
+
+.bb_title {
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	}
+  .bb_table{
+	width:99%;
+	color: #000000;
+	font-family: Verdana, Arial, Helvetica, sans-serif, "宋体";
+	font-size: 12px;
+
+	margin-top: 5px;
+	background-color: #e3ba89;
+	}
+.bb_table td{
+	text-align:center;
+	padding:5px;
+	background-color: #FFF;
+	}
+
+ .bb_table thead td{
+	text-align:center;
+	color:#000;
+	line-height: 26px;
+	padding: 0px;
+	background-color: #fef7e2;
+}

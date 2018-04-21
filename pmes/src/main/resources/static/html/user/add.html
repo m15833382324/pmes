@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="../jquery/easyui/themes/icon.css" rel="stylesheet" type="text/css"></link>
+<link href="../jquery/easyui/themes/default/easyui.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../css/table.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/User_Login.css"  rel="stylesheet" type="text/css"></link>
+<script src="../jquery/jquery-1.7.2.min.js" ></script>
+<script src="../jquery/easyui/jquery.easyui.min.js" ></script>
+<script src="../jquery/easyui/easyui-lang-zh_CN.js" ></script>
+<script>
+	// $("#form").ajaxForm({}); // 为ID为form的表单对象增加onSubmit事件.
+	
+	$(function (){
+		$("#userForm").form({
+			'url' : '${APP_PATH}/user/addUser.do',
+			'method' : 'POST',
+			'onSubmit' : function(params){
+				var loginpswd = $("input[name='loginpswd']").val();
+				var repswd = $("input[name='repswd']").val();
+				if( loginpswd === repswd ){
+					// 开启进度条
+					$.messager.progress();
+					return true;
+				}
+				// 消息提示: alert("title", "message", "image");
+				$.messager.alert("PMES系统提示", "两次密码输入不一致!", "warning");
+				return false;
+			},
+			'success' : function(r){
+				// 关闭进度条
+				$.messager.progress('close');
+				// easyui中,success回调函数中的参数r,是一个字符串
+				// 如果需要转化成JSON对象,需要使用eval函数来转换
+				var result = eval("(" + r + ")");
+				// 验证结果
+				if(result.success){
+					$.messager.alert("PMES系统提示", "新增用户成功!", "info");
+				}else{
+					$.messager.alert("PMES系统提示", "新增用户失败!", "error");
+				}
+			}
+		});
+		
+		// 为上级领导下拉列表增加默认加载数据
+		/*
+		$("#manager").combobox({
+			'url' : '${APP_PATH}/user/getManagers.do',
+			'valueField' : 'id',
+			'textField' : 'username'
+		});
+		*/
+		
+		// 为下拉列表增加事件
+		$('#level').combobox({
+			'onChange' : function(newValue, oldValue){ // 下拉列表数据变动触发
+				var trArray = $("#userTable > tr");
+				// 如果trArray数组长度为6,则需要增加一行数据.
+				if(trArray.length == 6){
+					var trStr = "";
+					trStr += '<tr id="managerTR">';
+					trStr += '<td class="box_table_even">上级领导：</td>';
+					trStr += '<td class="box_table_odd"><span class="in"> ';
+					trStr += '<select id="manager" name="mid"';
+					trStr += ' class="easyui-combobox"';
+					trStr += ' data-options="valueField: \'id\' , textField: \'username\' , url:\'${APP_PATH}/user/getManagers.do\', width: 150">';
+					trStr += '</select> <span class="star">*</span></span></td></tr>';
+					// alert(newValue);
+					$("#userTable").append(trStr);
+					reloadManagerSelect(newValue);
+				}
+				// 获取easyui 中combobox值
+				var levelStr = $('#level').combobox('getValue');
+				if(levelStr === '管理员' || levelStr === '经理' || levelStr === '---请选择---'){
+					// JQuery中,对象都有一个函数,remove() . 删除当前对象.
+					$("#managerTR").remove();
+				}else{
+					$.ajax({
+						'url' : '${APP_PATH}/user/getManagers.do',
+						'type' : "POST",
+						'data' : 'level=' + levelStr,
+						'beforeSend' : function(){
+							return true;
+						},
+						'success' : function( r ){
+							// r 的格式,是一个数组,数组中保存的是用户对象.
+							// 用户的ID是下拉列表中<option>的value值
+							// 用户的姓名username,是下拉列表中显示的字符串
+							var jsonArray = []; // 要显示的下拉列表的初始值
+							$.each(r, function(i, n){
+								// jsonArray[0].id
+								var jsonObj = {};
+								jsonObj.id = n.id; // 传递的参数值
+								jsonObj.username = n.username; // 显示的文本信息.
+								if( i == 0 ){
+									jsonObj.selected = true;
+								}
+								jsonArray.push(jsonObj);
+							});
+							$("#manager").combobox("loadData", jsonArray);
+						}
+					});
+				}
+			}
+		});
+		
+	});
+	
+	function reloadManagerSelect(levelStr){
+		var level = 0;
+		if(levelStr === '职员'){
+			level = 1;
+		}else{
+			level = 2;
+		}
+		$("#manager").combobox({
+			'url' : '${APP_PATH}/user/getManagers.do?level=' + level,
+			'valueField' : 'id',
+			'textField' : 'username'
+		});
+	}
+	
+</script>
+
+</head>
+
+<body><form id="userForm"  method="post">
+	<table border="0" cellpadding="0" cellspacing="0" class="table_border">
+		<tr>
+			<td><table width="100%" border="0" cellpadding="0"
+					cellspacing="0" class="table_right">
+					<tr>
+						<td width="25" height="26" align="right"><img
+							src="../images/ico_location.gif" width="16" height="15" /></td>
+						<td><strong>位置：</strong>首页&gt;权限管理&gt;用户维护&gt;新增用户</td>
+					</tr>
+				</table></td>
+		</tr>
+		<tr>
+			<td><table width="100%" border="0" cellspacing="0"
+					class="table_padding">
+					<tr>
+						<td align="center"><table border="0" cellpadding="0"
+								cellspacing="0" class="box_table" id="box_table2">
+								<thead id="userTable">
+									<tr>
+										<td class="box_table_even">登录帐号：</td>
+										<td class="box_table_odd"><span class="in"> 
+										<input name="loginname" type="text" 
+											class="easyui-validatebox"
+											data-options="required:true, validType:'length[6, 24]'"/> 
+										<span class="star">*</span></span></td>
+									</tr>
+									<tr>
+										<td class="box_table_even">用户姓名：</td>
+										<td class="box_table_odd"><span class="in"> 
+										<input class="easyui-validatebox"
+												data-options="required:true"
+												name="username" type="text" /> <span class="star">*</span></span></td>
+									</tr>
+									<tr>
+										<td class="box_table_even">电子邮件：</td>
+										<td class="box_table_odd"><span class="in"> 
+										<input class="easyui-validatebox"
+												data-options="required:true, validType:['email','length[6,20]']"
+												name="email" type="text" /> <span class="star">*</span></span></td>
+									</tr>
+									<tr>
+										<td class="box_table_even">登录密码：</td>
+										<td class="box_table_odd"><span class="in"> 
+										<input class="easyui-validatebox" id="loginpswd"
+												data-options="required:true, validType:'length[6, 18]'"
+												name="loginpswd" type="password" /> <span class="star">*</span></span></td>
+									</tr>
+									<tr>
+										<td class="box_table_even">密码确认：</td>
+										<td class="box_table_odd"><span class="in"> 
+										<input class="easyui-validatebox"
+												data-options="required:true"
+												name="repswd" type="password" /> <span class="star">*</span></span></td>
+									</tr>
+									<tr>
+										<td class="box_table_even">员工级别：</td>
+										<td class="box_table_odd"><span class="in"> 
+											<select id="level" name="level"
+												 class="easyui-combobox"
+												 data-options="width: 150"
+												 >
+													<option>---请选择---</option>
+													<option>职员</option>
+													<option>组长</option>
+													<option>经理</option>
+													<option>管理员</option>
+											</select> <span class="star">*</span></span></td>
+									</tr>
+									
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+							<table border="0" cellpadding="0" cellspacing="0"
+								class="operation">
+								<thead>
+									<tr>
+										<td><input type="submit" value="保存"/> <input type="button"
+											value="返回" onclick="javascript: window.history.back();" /></td>
+									</tr>
+								</thead>
+							</table></td>
+					</tr>
+				</table></td>
+		</tr>
+	</table>
+</form></body>
+</html>
