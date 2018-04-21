@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,15 @@ public class LoginAop {
 	private OperateLogService opreate;
 	
 	@AfterReturning("execution(* com.example.demo.controller.LoginController.*(..))")  
-	public void logServerAop(JoinPoint joinPoint){
+	public void loginAop(JoinPoint joinPoint){
+		insertLog(joinPoint);
+	}
+	@Before("execution(* com.example.demo.controller.LoginController.*(..))")
+	public void logoutAop(JoinPoint joinPoint){
+		insertLog(joinPoint);
+	}
+	
+	private void insertLog(JoinPoint joinPoint){
 		HttpSession session = request.getSession(true);
 		User user = (User) session.getAttribute(Const.LOGIN_USER);
 		if(user==null){
@@ -68,8 +77,7 @@ public class LoginAop {
 			operatelog.setUserid(user.getId());
 			operatelog.setOperateip(operateip);
 			opreate.insertLog(operatelog);
-			log.info("用户登入");
-			
+			log.info("用户登出");
 		}
 	}
 }
