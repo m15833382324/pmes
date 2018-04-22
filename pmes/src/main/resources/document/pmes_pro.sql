@@ -145,8 +145,8 @@ CREATE TABLE `t_user` (
 -- ----------------------------
 -- Records of t_user
 -- ----------------------------
-INSERT INTO `t_user` VALUES ('1', 'admin', 'admin', '张三', 'mail', '管理员', '2018-04-19 13:53:27', null);
-INSERT INTO `t_user` VALUES ('2', 'wangwu', '123456', '王五', 'lhl2284@qq.com', '经理', '2018-04-19 13:53:27', null);
-INSERT INTO `t_user` VALUES ('3', 'zhaoliu', '123456', '赵六', 'chen_2284@163.com', '组长', '2018-04-19 14:24:32', '2');
-INSERT INTO `t_user` VALUES ('4', 'qianqi', '123456', '钱七', 'xiao_22847@163.com', '职员', '2018-04-19 14:35:57', '3');
-INSERT INTO `t_user` VALUES ('5', 'zhouba', '123456', '周八', 'chen_2284@163.com', '职员', '2018-04-19 17:34:50', '3');
+INSERT INTO `t_user` VALUES ('1', 'admin', '21232f297a57a5a743894a0e4a801fc3', '张三', 'mail', '管理员', '2018-04-19 13:53:27', null);
+INSERT INTO `t_user` VALUES ('2', 'wangwu', 'e10adc3949ba59abbe56e057f20f883e', '王五', 'lhl2284@qq.com', '经理', '2018-04-19 13:53:27', null);
+INSERT INTO `t_user` VALUES ('3', 'zhaoliu', 'e10adc3949ba59abbe56e057f20f883e', '赵六', 'chen_2284@163.com', '组长', '2018-04-19 14:24:32', '2');
+INSERT INTO `t_user` VALUES ('4', 'qianqi', 'e10adc3949ba59abbe56e057f20f883e', '钱七', 'xiao_22847@163.com', '职员', '2018-04-19 14:35:57', '3');
+INSERT INTO `t_user` VALUES ('5', 'zhouba', 'e10adc3949ba59abbe56e057f20f883e', '周八', 'chen_2284@163.com', '职员', '2018-04-19 17:34:50', '3');

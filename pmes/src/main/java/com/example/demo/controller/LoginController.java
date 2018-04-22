@@ -7,6 +7,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -25,17 +28,13 @@ public class LoginController {
 	@ResponseBody
 	public Map<String, Object> login(User user, HttpServletRequest req) {
 		// 校验用户名和密码
+		UsernamePasswordToken token = new UsernamePasswordToken(user.getLoginname(), user.getLoginpswd());
 		Map<String,Object> jsonMap =new HashMap<String,Object>();
-		User loginUser = userService.login(user);
-		HttpSession session = req.getSession(true);
-		if(loginUser == null){
-			jsonMap.put("flag",false);
-			jsonMap.put("msg", "用户名或密码错误,请重新登录");
-		}else{
-			session.setAttribute(Const.LOGIN_USER, loginUser);
-			jsonMap.put("flag",true);
-			jsonMap.put("url","html/main.html");
-		}
+		Subject subject = SecurityUtils.getSubject();
+		subject.login(token);
+		jsonMap.put("flag",true);
+		jsonMap.put("url","html/main.html");
+//		}
 		// 返回
 		return jsonMap;
 	}
@@ -46,10 +45,9 @@ public class LoginController {
 		String contextPath=req.getContextPath();
 		// 校验用户名和密码
 		Map<String,Object> jsonMap =new HashMap<String,Object>();
-		HttpSession session = req.getSession(true);
-		
-		session.removeAttribute(Const.LOGIN_USER);
-		
+		Subject subject = SecurityUtils.getSubject();
+		subject.logout();
+		subject.getSession().removeAttribute(Const.LOGIN_USER);
 		jsonMap.put("flag",true);
 		jsonMap.put("url",contextPath);
 		// 返回

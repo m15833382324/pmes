@@ -66,4 +66,10 @@ public interface UserService {
 	public List<User> getManagers(String level);
 	// 删除用户
 	public int deleteUsers(RequestParameter params);
+	/**
+	 * 根据名称查询用户
+	 * @param username
+	 * @return
+	 */
+	public User findUserByUserName(String username);
 }

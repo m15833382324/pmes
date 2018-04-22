@@ -158,6 +158,12 @@ public class UserServiceImpl implements UserService {
 		}
 		return count;
 	}
+
+	@Override
+	public User findUserByUserName(String username) {
+		// TODO Auto-generated method stub
+		return userDao.findUserByUserName(username);
+	}
 }
 
 

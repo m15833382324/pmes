@@ -63,6 +63,11 @@
 		select * from t_user
 			where id = #{id}
 	</select>
+	<!-- 根据ID查询用户 -->
+	<select id="findUserByUserName" resultType="user">
+		select * from t_user
+			where loginname = #{username}
+	</select>
 	
 	<!-- 分页查询员工 -->
 	<select id="getUsersByPage" resultType="user">

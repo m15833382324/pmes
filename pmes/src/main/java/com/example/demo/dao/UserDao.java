@@ -64,4 +64,10 @@ public interface UserDao {
 	public List<User> selectManagersByLevel(String levelParam);
 
 	public int deleteUsersByParam(RequestParameter params);
+	/**
+	 * 根据登录名称查询用户;
+	 * @param username
+	 * @return
+	 */
+	public User findUserByUserName(String username);
 }
